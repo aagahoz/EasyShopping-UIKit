@@ -35,6 +35,38 @@ final class ShoppingListViewController: UIViewController {
     }
     
     @objc private func addButtonTapped() {
-        print("Add Button Tapped")
+        presentAddItemAlert()
     }
+    
+    private func presentAddItemAlert() {
+        
+        let alertController = UIAlertController(
+            title: "Yeni Ürün",
+            message: "Alışveriş listene ekle",
+            preferredStyle: .alert
+        )
+        
+        alertController.addTextField { textfield in
+            textfield.placeholder = "Ürün adı"
+            textfield.autocapitalizationType = .sentences
+        }
+        
+        let cancelAction = UIAlertAction(
+                title: "İptal",
+                style: .cancel
+        )
+        
+        let addAction = UIAlertAction(
+            title: "Ekle",
+            style: .default
+        ) { [weak alertController] _ in
+            let text = alertController?.textFields?.first?.text
+            print("Girilen ürün \(text ?? "")")
+        }
+        alertController.addAction(cancelAction)
+        alertController.addAction(addAction)
+        
+        present(alertController, animated: true)
+    }
+    
 }

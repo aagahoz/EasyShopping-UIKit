@@ -27,8 +27,17 @@ final class ShoppingListManager {
         return list
     }
     
+    func removeList(_ list: ShoppingList) {
+        lists.removeAll { $0.id == list.id }
+    }
+    
     // MARK: - Items
-
+    
+    func items(for list: ShoppingList) -> [ShoppingItem] {
+        return itemsByListID[list.id] ?? []
+    }
+    
+    @discardableResult
     func addItem(
         to list: ShoppingList,
         name: String,
@@ -46,7 +55,9 @@ final class ShoppingListManager {
         return item
     }
     
-    func items(for list: ShoppingList) -> [ShoppingItem] {
-        return itemsByListID[list.id] ?? []
+    func removeItem(_ item: ShoppingItem, from list: ShoppingList) {
+        guard var items = itemsByListID[list.id] else { return }
+        items.removeAll { $0.id == item.id }
+        itemsByListID[list.id] = items
     }
 }

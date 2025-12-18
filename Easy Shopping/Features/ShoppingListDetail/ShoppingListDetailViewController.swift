@@ -186,4 +186,14 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
         
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        guard editingStyle == .delete else { return }
+        
+        let item = items[indexPath.row]
+        manager.removeItem(item, from: list)
+        
+        tableView.deleteRows(at: [indexPath], with: .automatic)
+        updateUI()
+    }
 }

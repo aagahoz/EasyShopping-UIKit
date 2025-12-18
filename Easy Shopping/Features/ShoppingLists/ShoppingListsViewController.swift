@@ -161,4 +161,15 @@ extension ShoppingListsViewController: UITableViewDataSource, UITableViewDelegat
         )
         navigationController?.pushViewController(detailVC, animated: true)
     }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        
+        guard editingStyle == .delete else { return }
+        
+        let listToRemove = shoppingLists[indexPath.row]
+        manager.removeList(listToRemove)
+        
+        tableView.deleteRows(at: [indexPath], with: .automatic)
+        updateUI()
+    }
 }

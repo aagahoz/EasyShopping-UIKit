@@ -61,4 +61,48 @@ final class ShoppingListManagerTests: XCTestCase {
         XCTAssertEqual(manager.items(for: list1).count, 1)
         XCTAssertEqual(manager.items(for: list2).count, 1)
     }
+    
+    func test_removeItem_removesItemFromList() {
+        // Arrange
+        let list = manager.createList(title: "Market")
+        let item = manager.addItem(
+            to: list,
+         name: "Süt",
+         quantity: "1L"
+        )
+        
+        // Act
+        manager.removeItem(item, from: list)
+        
+        // Assert
+        XCTAssertTrue(manager.items(for: list).isEmpty)
+    }
+    
+    func test_removeList_removesListFromManager() {
+        // Arrange
+        let list1 = manager.createList(title: "Market")
+        let list2 = manager.createList(title: "Eczane")
+        
+        XCTAssertEqual(manager.lists.count, 2)
+        
+        // Act
+        manager.removeList(list1)
+        
+        // Assert-2
+        XCTAssertEqual(manager.lists.count, 1)
+        XCTAssertEqual(manager.lists.first, list2)
+    }
+    
+    func test_removeList_nonExistingList_doesNothing() {
+        // Arrange
+        let list1 = manager.createList(title: "Market")
+        let fakeList = ShoppingList(id: UUID(), title: "Yok")
+        
+        // Act
+        manager.removeList(fakeList)
+        
+        // Assert
+        XCTAssertEqual(manager.lists.count, 1)
+        XCTAssertEqual(manager.lists.first, list1)
+    }
 }

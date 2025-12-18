@@ -1,75 +1,83 @@
 //
-//  ShoppingListsViewController.swift
+//  ShoppingListDetailViewController.swift
 //  Easy Shopping
 //
-//  Created by Agah Ozdemir on 16.12.2025.
+//  Created by Agah Ozdemir on 18.12.2025.
 //
 
 import UIKit
 
-final class ShoppingListsViewController: UIViewController {
-
-    // MARK: - Dependencies
-    private let manager: ShoppingListManager
-
-    // MARK: - UI
+final class ShoppingListDetailViewController: UIViewController {
+    
+    // MARK - Dependincies
+    private var list: ShoppingList
+    private var manager: ShoppingListManager
+    
+    // MARK - UI
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     private let emptyStateView = EmptyStateView()
-
-    // MARK: - Init
-    init(manager: ShoppingListManager) {
+    
+    // MARK - Init
+    init(
+        list: ShoppingList,
+        manager: ShoppingListManager
+    ) {
+        self.list = list
         self.manager = manager
         super.init(nibName: nil, bundle: nil)
     }
-
+    
+    
     @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("init(coder:) has not been implemented")
     }
-
-    // MARK: - Lifecycle
+    
+    // MARK - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         view.backgroundColor = .systemBackground
-        title = "My Shopping Lists"
-
+        title = list.title
+        
         configureNavigationBar()
         configureTableView()
         configureEmptyState()
         updateUI()
     }
-
-    private var shoppingLists: [ShoppingList] {
-        manager.lists
+    
+    private var items: [ShoppingItem] {
+        manager.items(for: list)
     }
-
-    // MARK: - UI Setup
-
+    
     private func configureNavigationBar() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .add,
             target: self,
-            action: #selector(addButtonTapped)
+            action: #selector(addItemTapped)
         )
     }
-
+    
     private func configureTableView() {
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-
+        
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "ListCell")
+        
+        tableView.register(
+            UITableViewCell.self,
+            forCellReuseIdentifier: "ItemCell"
+        )
     }
-
+    
     private func configureEmptyState() {
         view.addSubview(emptyStateView)
         emptyStateView.translatesAutoresizingMaskIntoConstraints = false
@@ -81,77 +89,70 @@ final class ShoppingListsViewController: UIViewController {
             emptyStateView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-
+    
     private func updateUI() {
-        let isEmpty = shoppingLists.isEmpty
+        let isEmpty = items.isEmpty
+        
         emptyStateView.isHidden = !isEmpty
         tableView.isHidden = isEmpty
         tableView.reloadData()
     }
-
-    // MARK: - Actions
-
-    @objc private func addButtonTapped() {
+    
+    @objc private func addItemTapped() {
         let alert = UIAlertController(
-            title: "Yeni Liste",
-            message: "Liste adı gir",
+            title: "Yeni Ürün",
+            message: "Listeye Ürün Ekle",
             preferredStyle: .alert
         )
-
+        
         alert.addTextField {
-            $0.placeholder = "Örn: Haftalık Alışveriş"
+            $0.placeholder = "Ürün adı"
         }
-
+        
+        alert.addTextField {
+            $0.placeholder = "Miktar (örn: 1 kg)"
+        }
+        
         alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
-
+        
         alert.addAction(UIAlertAction(title: "Ekle", style: .default) { [weak self] _ in
             guard
                 let self,
-                let text = alert.textFields?.first?.text,
-                !text.trimmingCharacters(in: .whitespaces).isEmpty
+                let name = alert.textFields?[0].text,
+                let quantity = alert.textFields?[1].text,
+                !name.trimmingCharacters(in: .whitespaces).isEmpty
             else { return }
-
-            self.manager.createList(title: text)
+            
+            self.manager.addItem(
+                to: self.list,
+                name: name,
+                quantity: quantity
+            )
+            
             self.updateUI()
         })
-
         present(alert, animated: true)
     }
 }
 
-// MARK: - TableView
-
-extension ShoppingListsViewController: UITableViewDataSource, UITableViewDelegate {
-
+extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        shoppingLists.count
-    }
-
-    func tableView(
-        _ tableView: UITableView,
-        cellForRowAt indexPath: IndexPath
-    ) -> UITableViewCell {
-
-        let cell = tableView.dequeueReusableCell(
-            withIdentifier: "ListCell",
-            for: indexPath
-        )
-
-        var content = cell.defaultContentConfiguration()
-        content.text = shoppingLists[indexPath.row].title
-        cell.contentConfiguration = content
-        cell.accessoryType = .disclosureIndicator
-
-        return cell
+        items.count
     }
     
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedList = shoppingLists[indexPath.row]
-        
-        let detailVC = ShoppingListDetailViewController(
-            list: selectedList,
-            manager: manager
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(
+            withIdentifier: "ItemCell",
+            for: indexPath
         )
-        navigationController?.pushViewController(detailVC, animated: true)
+        
+        let item = items[indexPath.row]
+        
+        var content = cell.defaultContentConfiguration()
+        content.text = item.name
+        content.secondaryText = item.quantity
+        
+        cell.contentConfiguration = content
+        return cell
     }
 }

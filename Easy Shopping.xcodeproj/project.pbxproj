@@ -24,6 +24,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		386369D72EF4730B00147D2D /* Easy Shopping.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Easy Shopping.xctestplan"; sourceTree = "<group>"; };
 		386E1EF12EF1544100FF83E5 /* Easy Shopping.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Easy Shopping.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		386E1F0A2EF1544200FF83E5 /* Easy ShoppingTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Easy ShoppingTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		386E1F142EF1544200FF83E5 /* Easy ShoppingUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Easy ShoppingUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -88,6 +89,7 @@
 		386E1EE82EF1544100FF83E5 = {
 			isa = PBXGroup;
 			children = (
+				386369D72EF4730B00147D2D /* Easy Shopping.xctestplan */,
 				386E1EF32EF1544100FF83E5 /* Easy Shopping */,
 				386E1F0D2EF1544200FF83E5 /* Easy ShoppingTests */,
 				386E1F172EF1544200FF83E5 /* Easy ShoppingUITests */,
@@ -486,11 +488,15 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "agahoz.Easy-ShoppingTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Easy Shopping.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Easy Shopping";
 			};
 			name = Debug;
@@ -508,11 +514,15 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "agahoz.Easy-ShoppingTests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Easy Shopping.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Easy Shopping";
 			};
 			name = Release;
@@ -528,11 +538,15 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "agahoz.Easy-ShoppingUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = "Easy Shopping";
 			};
 			name = Debug;
@@ -548,11 +562,15 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "agahoz.Easy-ShoppingUITests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 				TEST_TARGET_NAME = "Easy Shopping";
 			};
 			name = Release;

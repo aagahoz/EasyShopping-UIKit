@@ -20,8 +20,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let window = UIWindow(windowScene: windowScene)
         
-        // 1. Shopping List Tab
-        let shoppingListVC = ShoppingListsViewController()
+        let manager = ShoppingListManager()
+        
+        // MARK - Shopping List Tab
+        let shoppingListVC = ShoppingListsViewController(manager: manager)
         let shoppingNav = UINavigationController(
             rootViewController: shoppingListVC
         )
@@ -31,7 +33,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
                 tag: 0
         )
         
-        // 2. Settings Tab
+        // MARK - Settings Tab
         let settingsVC = SettingsViewController()
         let settingsNav = UINavigationController(
                 rootViewController: settingsVC
@@ -43,7 +45,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         )
         
         
-        // 3. Tab Bar Controller
+        // MARK - Tab Bar Controller
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = [
             shoppingNav,

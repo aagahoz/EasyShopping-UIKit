@@ -1,0 +1,39 @@
+{
+  "configurations" : [
+    {
+      "id" : "25DA706D-7685-4B8E-B5BC-D07EF32BB92A",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Easy Shopping.xcodeproj",
+      "identifier" : "386E1EF02EF1544100FF83E5",
+      "name" : "Easy Shopping"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : false,
+      "target" : {
+        "containerPath" : "container:Easy Shopping.xcodeproj",
+        "identifier" : "386E1F092EF1544200FF83E5",
+        "name" : "Easy ShoppingTests"
+      }
+    },
+    {
+      "enabled" : false,
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:Easy Shopping.xcodeproj",
+        "identifier" : "386E1F132EF1544200FF83E5",
+        "name" : "Easy ShoppingUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -21,7 +21,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let window = UIWindow(windowScene: windowScene)
         
         // 1. Shopping List Tab
-        let shoppingListVC = ShoppingListViewController()
+        let shoppingListVC = ShoppingListsViewController()
         let shoppingNav = UINavigationController(
             rootViewController: shoppingListVC
         )

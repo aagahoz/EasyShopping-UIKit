@@ -11,7 +11,7 @@ struct ShoppingList {
     let title: String
 }
 
-final class ShoppingListViewController: UIViewController {
+final class ShoppingListsViewController: UIViewController {
     
     // Mark - State
     private var shoppingLists: [ShoppingList] = []

@@ -67,7 +67,11 @@ final class ShoppingListsViewController: UIViewController {
 
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "ListCell")
+
+        tableView.register(
+            ShoppingListCell.self,
+            forCellReuseIdentifier: ShoppingListCell.reuseIdentifier
+        )
     }
 
     private func configureEmptyState() {
@@ -86,7 +90,10 @@ final class ShoppingListsViewController: UIViewController {
         let isEmpty = shoppingLists.isEmpty
         emptyStateView.isHidden = !isEmpty
         tableView.isHidden = isEmpty
-        tableView.reloadData()
+        
+        if !isEmpty {
+            tableView.reloadData()
+        }
     }
 
     // MARK: - Actions
@@ -131,18 +138,18 @@ extension ShoppingListsViewController: UITableViewDataSource, UITableViewDelegat
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-
+        
         let cell = tableView.dequeueReusableCell(
-            withIdentifier: "ListCell",
+            withIdentifier: ShoppingListCell.reuseIdentifier,
             for: indexPath
-        )
-
-        var content = cell.defaultContentConfiguration()
-        content.text = shoppingLists[indexPath.row].title
-        cell.contentConfiguration = content
-        cell.accessoryType = .disclosureIndicator
-
+        ) as! ShoppingListCell
+        
+        let list = shoppingLists[indexPath.row]
+        let itemCount = manager.items(for: list).count
+        
+        cell.configure(with: list, itemCount: itemCount)
         return cell
+        
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

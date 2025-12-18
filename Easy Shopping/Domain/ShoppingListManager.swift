@@ -12,8 +12,8 @@ final class ShoppingListManager {
     private(set) var lists: [ShoppingList] = []
     private var itemsByListID: [UUID: [ShoppingItem]] = [:]
     
-    // MARK - Lists
-    
+    // MARK: - Lists
+
     func createList(title: String) -> ShoppingList {
         
         let list = ShoppingList(
@@ -27,8 +27,8 @@ final class ShoppingListManager {
         return list
     }
     
-    // MARK - Items
-    
+    // MARK: - Items
+
     func addItem(
         to list: ShoppingList,
         name: String,

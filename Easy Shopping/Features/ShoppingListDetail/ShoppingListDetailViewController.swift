@@ -8,16 +8,26 @@
 import UIKit
 
 final class ShoppingListDetailViewController: UIViewController {
-    
-    // MARK - Dependincies
-    private var list: ShoppingList
-    private var manager: ShoppingListManager
-    
-    // MARK - UI
+
+    // MARK: - Dependencies
+
+    private let list: ShoppingList
+    private let manager: ShoppingListManager
+
+    // MARK: - State
+
+    private var items: [ShoppingItem] {
+        manager.items(for: list)
+    }
+
+    // MARK: - UI
+
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
+
     private let emptyStateView = EmptyStateView()
-    
-    // MARK - Init
+
+    // MARK: - Init
+
     init(
         list: ShoppingList,
         manager: ShoppingListManager
@@ -26,30 +36,28 @@ final class ShoppingListDetailViewController: UIViewController {
         self.manager = manager
         super.init(nibName: nil, bundle: nil)
     }
-    
-    
+
     @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        fatalError("Storyboard kullanılmıyor")
     }
-    
-    // MARK - Lifecycle
+
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+
         view.backgroundColor = .systemBackground
         title = list.title
-        
+
         configureNavigationBar()
         configureTableView()
         configureEmptyState()
         updateUI()
     }
-    
-    private var items: [ShoppingItem] {
-        manager.items(for: list)
-    }
-    
+
+    // MARK: - Navigation Bar
+
     private func configureNavigationBar() {
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             barButtonSystemItem: .add,
@@ -57,27 +65,31 @@ final class ShoppingListDetailViewController: UIViewController {
             action: #selector(addItemTapped)
         )
     }
-    
+
+    // MARK: - TableView
+
     private func configureTableView() {
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        
+
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.topAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
+
         tableView.dataSource = self
         tableView.delegate = self
-        
+
         tableView.register(
-            UITableViewCell.self,
-            forCellReuseIdentifier: "ItemCell"
+            ShoppingItemCell.self,
+            forCellReuseIdentifier: ShoppingItemCell.reuseIdentifier
         )
     }
-    
+
+    // MARK: - Empty State
+
     private func configureEmptyState() {
         view.addSubview(emptyStateView)
         emptyStateView.translatesAutoresizingMaskIntoConstraints = false
@@ -89,70 +101,89 @@ final class ShoppingListDetailViewController: UIViewController {
             emptyStateView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-    
+
+    // MARK: - UI Update
+
     private func updateUI() {
         let isEmpty = items.isEmpty
-        
+
         emptyStateView.isHidden = !isEmpty
         tableView.isHidden = isEmpty
-        tableView.reloadData()
+
+        if !isEmpty {
+            tableView.reloadData()
+        }
     }
-    
+
+    // MARK: - Actions
+
     @objc private func addItemTapped() {
         let alert = UIAlertController(
             title: "Yeni Ürün",
-            message: "Listeye Ürün Ekle",
+            message: "Listeye ürün ekle",
             preferredStyle: .alert
         )
-        
+
         alert.addTextField {
             $0.placeholder = "Ürün adı"
+            $0.autocapitalizationType = .sentences
         }
-        
+
         alert.addTextField {
             $0.placeholder = "Miktar (örn: 1 kg)"
         }
-        
-        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
-        
-        alert.addAction(UIAlertAction(title: "Ekle", style: .default) { [weak self] _ in
-            guard
-                let self,
-                let name = alert.textFields?[0].text,
-                let quantity = alert.textFields?[1].text,
-                !name.trimmingCharacters(in: .whitespaces).isEmpty
-            else { return }
-            
-            self.manager.addItem(
-                to: self.list,
-                name: name,
-                quantity: quantity
-            )
-            
-            self.updateUI()
-        })
+
+        alert.addAction(
+            UIAlertAction(title: "İptal", style: .cancel)
+        )
+
+        alert.addAction(
+            UIAlertAction(title: "Ekle", style: .default) { [weak self] _ in
+                guard
+                    let self,
+                    let name = alert.textFields?[0].text,
+                    let quantity = alert.textFields?[1].text,
+                    !name.trimmingCharacters(in: .whitespaces).isEmpty
+                else { return }
+
+                self.manager.addItem(
+                    to: self.list,
+                    name: name,
+                    quantity: quantity
+                )
+
+                self.updateUI()
+            }
+        )
+
         present(alert, animated: true)
     }
 }
 
+// MARK: - UITableViewDataSource & Delegate
+
 extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDelegate {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
+    func tableView(
+        _ tableView: UITableView,
+        numberOfRowsInSection section: Int
+    ) -> Int {
         items.count
     }
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+
+    func tableView(
+        _ tableView: UITableView,
+        cellForRowAt indexPath: IndexPath
+    ) -> UITableViewCell {
+
         let cell = tableView.dequeueReusableCell(
-            withIdentifier: "ItemCell",
+            withIdentifier: ShoppingItemCell.reuseIdentifier,
             for: indexPath
-        )
-        
+        ) as! ShoppingItemCell
+
         let item = items[indexPath.row]
+        cell.configure(with: item)
         
-        var content = cell.defaultContentConfiguration()
-        content.text = item.name
-        content.secondaryText = item.quantity
-        
-        cell.contentConfiguration = content
         return cell
     }
 }

@@ -32,11 +32,9 @@ final class ShoppingItemCell: UITableViewCell {
     }()
 
     private let statusImageView: UIImageView = {
-        let imageView = UIImageView(
-            image: UIImage(systemName: "circle")
-        )
-        imageView.tintColor = .tertiaryLabel
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
+        imageView.tintColor = .tertiaryLabel
         return imageView
     }()
 
@@ -53,11 +51,65 @@ final class ShoppingItemCell: UITableViewCell {
         fatalError("Storyboard kullanılmıyor")
     }
 
+    // MARK: - Reuse
+
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        nameLabel.attributedText = nil
+        nameLabel.text = nil
+        quantityLabel.text = nil
+        statusImageView.image = nil
+    }
+
     // MARK: - Configuration
 
-    func configure(with item: ShoppingItem) {
+    func configure(with item: ShoppingItem, animated: Bool = false) {
         nameLabel.text = item.name
         quantityLabel.text = item.quantity
+        updateCompletionUI(isCompleted: item.isCompleted, animated: animated)
+    }
+
+    // MARK: - Completion UI
+    
+    private func updateCompletionUI(isCompleted: Bool, animated: Bool = false) {
+
+        let updateBlock = {
+            self.statusImageView.image = UIImage(
+                systemName: isCompleted ? "checkmark.circle.fill" : "circle"
+            )
+
+            self.statusImageView.tintColor = isCompleted
+                ? .systemGreen
+                : .tertiaryLabel
+
+            let titleAttributes: [NSAttributedString.Key: Any] = isCompleted
+                ? [
+                    .strikethroughStyle: NSUnderlineStyle.single.rawValue,
+                    .foregroundColor: UIColor.secondaryLabel
+                  ]
+                : [
+                    .foregroundColor: UIColor.label
+                  ]
+
+            self.nameLabel.attributedText = NSAttributedString(
+                string: self.nameLabel.text ?? "",
+                attributes: titleAttributes
+            )
+
+            self.quantityLabel.alpha = isCompleted ? 0.5 : 1.0
+        }
+
+        guard animated else {
+            updateBlock()
+            return
+        }
+
+        UIView.transition(
+            with: statusImageView,
+            duration: 0.2,
+            options: .transitionCrossDissolve,
+            animations: updateBlock
+        )
     }
 
     // MARK: - Setup

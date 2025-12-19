@@ -57,13 +57,16 @@ final class InMemoryShoppingListRepository: ShoppingListRepository {
         _ item: ShoppingItem,
         in list: ShoppingList,
         newName: String,
-        newQuantity: String
+        newQuantity: String,
+        isCompleted: Bool
     ) {
         guard var items = itemsByListID[list.id],
               let index = items.firstIndex(where: {$0.id == item.id }) else { return }
         
         items[index].name = newName
         items[index].quantity = newQuantity
+        items[index].isCompleted = isCompleted
+        
         itemsByListID[list.id] = items
     }
     
@@ -71,5 +74,20 @@ final class InMemoryShoppingListRepository: ShoppingListRepository {
         guard var items = itemsByListID[list.id] else { return }
         items.removeAll { $0.id == item.id }
         itemsByListID[list.id] = items
+    }
+    
+    func toggleCompletion(
+        for item: ShoppingItem,
+        in list: ShoppingList
+    ) {
+        var updatedItem = item
+        updatedItem.isCompleted.toggle()
+        updateItem(
+            item,
+            in: list,
+            newName: updatedItem.name,
+            newQuantity: updatedItem.quantity,
+            isCompleted: updatedItem.isCompleted
+        )
     }
 }

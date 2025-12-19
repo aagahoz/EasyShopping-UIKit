@@ -26,7 +26,13 @@ protocol ShoppingListRepository {
         _ item: ShoppingItem,
         in list: ShoppingList,
         newName: String,
-        newQuantity: String
+        newQuantity: String,
+        isCompleted: Bool
     )
     func removeItem(_ item: ShoppingItem, from list: ShoppingList)
+    
+    func toggleCompletion(
+        for item: ShoppingItem,
+        in list: ShoppingList
+    )
 }

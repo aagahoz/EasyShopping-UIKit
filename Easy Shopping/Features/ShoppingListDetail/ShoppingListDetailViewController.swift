@@ -162,7 +162,8 @@ final class ShoppingListDetailViewController: UIViewController {
             self.viewModel.updateItem(
                 item,
                 newName: newName,
-                newQuantity: newQuantity
+                newQuantity: newQuantity,
+                isCompleted: item.isCompleted
             )
             self.updateUI()
         })
@@ -219,5 +220,20 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
         }
 
         return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+
+        guard
+            let cell = tableView.cellForRow(at: indexPath) as? ShoppingItemCell
+        else { return }
+
+        viewModel.toggleItemCompletion(at: indexPath.row)
+
+        let updatedItem = viewModel.item(at: indexPath.row)
+
+        cell.configure(with: updatedItem, animated: true)
+
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 }

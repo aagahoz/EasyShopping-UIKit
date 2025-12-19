@@ -70,14 +70,31 @@ final class ShoppingListDetailViewModel {
     func updateItem(
         _ item: ShoppingItem,
         newName: String,
-        newQuantity: String
+        newQuantity: String,
+        isCompleted: Bool
+        
     ) {
         repository.updateItem(
             item,
             in: list,
             newName: newName,
-            newQuantity: newQuantity
+            newQuantity: newQuantity,
+            isCompleted: isCompleted
+            
         )
+        loadItems()
+    }
+    
+    func toggleItemCompletion(at index: Int) {
+        guard items.indices.contains(index) else { return }
+        
+        let item = items[index]
+        
+        repository.toggleCompletion(
+            for: item,
+            in: list
+        )
+        
         loadItems()
     }
 }

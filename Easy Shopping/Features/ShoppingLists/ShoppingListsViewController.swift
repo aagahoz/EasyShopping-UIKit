@@ -10,21 +10,21 @@ import UIKit
 final class ShoppingListsViewController: UIViewController {
 
     // MARK: - Dependencies
-    private let manager: ShoppingListManager
+    private let viewModel: ShoppingListsViewModel
 
     // MARK: - UI
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
     private let emptyStateView = EmptyStateView()
 
     // MARK: - Init
-    init(manager: ShoppingListManager) {
-        self.manager = manager
+    init(repository: ShoppingListRepository) {
+        self.viewModel = ShoppingListsViewModel(repository: repository)
         super.init(nibName: nil, bundle: nil)
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
-        fatalError()
+        fatalError("Storyboard kullanılmıyor")
     }
 
     // MARK: - Lifecycle
@@ -38,10 +38,6 @@ final class ShoppingListsViewController: UIViewController {
         configureTableView()
         configureEmptyState()
         updateUI()
-    }
-
-    private var shoppingLists: [ShoppingList] {
-        manager.lists
     }
 
     // MARK: - UI Setup
@@ -87,13 +83,9 @@ final class ShoppingListsViewController: UIViewController {
     }
 
     private func updateUI() {
-        let isEmpty = shoppingLists.isEmpty
-        emptyStateView.isHidden = !isEmpty
-        tableView.isHidden = isEmpty
-        
-        if !isEmpty {
-            tableView.reloadData()
-        }
+        emptyStateView.isHidden = !viewModel.isEmpty
+        tableView.isHidden = viewModel.isEmpty
+        tableView.reloadData()
     }
 
     // MARK: - Actions
@@ -118,99 +110,98 @@ final class ShoppingListsViewController: UIViewController {
                 !text.trimmingCharacters(in: .whitespaces).isEmpty
             else { return }
 
-            self.manager.createList(title: text)
+            self.viewModel.createList(title: text)
             self.updateUI()
         })
 
         present(alert, animated: true)
     }
-    
+
     private func presentEditListAlert(list: ShoppingList) {
-        
-        let alert = UIAlertController(title: "Listeyi Düeznle", message: nil, preferredStyle: .alert)
-        
+        let alert = UIAlertController(
+            title: "Listeyi Düzenle",
+            message: nil,
+            preferredStyle: .alert
+        )
+
         alert.addTextField { $0.text = list.title }
-        
+
         alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
         alert.addAction(UIAlertAction(title: "Düzenle", style: .default) { [weak self] _ in
-            guard let self,
-                  let newTitle = alert.textFields?[0].text,
-                  !newTitle.trimmingCharacters(in: .whitespaces).isEmpty
+            guard
+                let self,
+                let newTitle = alert.textFields?.first?.text,
+                !newTitle.trimmingCharacters(in: .whitespaces).isEmpty
             else { return }
-            
-            self.manager.updateList(list, newTitle: newTitle)
+
+            self.viewModel.updateList(list, newTitle: newTitle)
             self.updateUI()
         })
+
         present(alert, animated: true)
     }
 }
 
-// MARK: - TableView
+// MARK: - UITableViewDataSource & Delegate
 
 extension ShoppingListsViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        shoppingLists.count
+        viewModel.numberOfLists
     }
 
     func tableView(
         _ tableView: UITableView,
         cellForRowAt indexPath: IndexPath
     ) -> UITableViewCell {
-        
+
         let cell = tableView.dequeueReusableCell(
             withIdentifier: ShoppingListCell.reuseIdentifier,
             for: indexPath
         ) as! ShoppingListCell
-        
-        let list = shoppingLists[indexPath.row]
-        let itemCount = manager.items(for: list).count
-        
+
+        let list = viewModel.list(at: indexPath.row)
+        let itemCount = viewModel.itemCount(for: list)
+
         cell.configure(with: list, itemCount: itemCount)
         return cell
-        
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedList = shoppingLists[indexPath.row]
+        let selectedList = viewModel.lists[indexPath.row]
+
+        let detailViewModel = ShoppingListDetailViewModel(
+            list: selectedList,
+            repository: viewModel.repository
+        )
         
         let detailVC = ShoppingListDetailViewController(
-            list: selectedList,
-            manager: manager
+            viewModel: detailViewModel
         )
+        
         navigationController?.pushViewController(detailVC, animated: true)
     }
-    
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        
-        guard editingStyle == .delete else { return }
-        
-        let listToRemove = shoppingLists[indexPath.row]
-        manager.removeList(listToRemove)
-        
-        tableView.deleteRows(at: [indexPath], with: .automatic)
-        updateUI()
-    }
-    
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        
-        let list = shoppingLists[indexPath.row]
-        
+
+    func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
+
+        let list = viewModel.list(at: indexPath.row)
+
         let editAction = UIContextualAction(style: .normal, title: "Düzenle") { [weak self] _, _, completion in
             self?.presentEditListAlert(list: list)
             completion(true)
         }
         editAction.backgroundColor = .systemBlue
-        
+
         let deleteAction = UIContextualAction(style: .destructive, title: "Sil") { [weak self] _, _, completion in
             guard let self else { return }
-            self.manager.removeList(list)
-            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+            self.viewModel.deleteList(at: indexPath.row)
             self.updateUI()
             completion(true)
         }
-        
+
         return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
-        
     }
 }

@@ -5,35 +5,30 @@
 //  Created by Agah Ozdemir on 18.12.2025.
 //
 
+//
+//  ShoppingListDetailViewController.swift
+//  Easy Shopping
+//
+//  Created by Agah Ozdemir on 18.12.2025
+//
+
 import UIKit
 
 final class ShoppingListDetailViewController: UIViewController {
 
     // MARK: - Dependencies
 
-    private let list: ShoppingList
-    private let manager: ShoppingListManager
-
-    // MARK: - State
-
-    private var items: [ShoppingItem] {
-        manager.items(for: list)
-    }
+    private let viewModel: ShoppingListDetailViewModel
 
     // MARK: - UI
 
     private let tableView = UITableView(frame: .zero, style: .insetGrouped)
-
     private let emptyStateView = EmptyStateView()
 
     // MARK: - Init
 
-    init(
-        list: ShoppingList,
-        manager: ShoppingListManager
-    ) {
-        self.list = list
-        self.manager = manager
+    init(viewModel: ShoppingListDetailViewModel) {
+        self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
 
@@ -48,7 +43,7 @@ final class ShoppingListDetailViewController: UIViewController {
         super.viewDidLoad()
 
         view.backgroundColor = .systemBackground
-        title = list.title
+        title = viewModel.list.title
 
         configureNavigationBar()
         configureTableView()
@@ -105,14 +100,9 @@ final class ShoppingListDetailViewController: UIViewController {
     // MARK: - UI Update
 
     private func updateUI() {
-        let isEmpty = items.isEmpty
-
-        emptyStateView.isHidden = !isEmpty
-        tableView.isHidden = isEmpty
-
-        if !isEmpty {
-            tableView.reloadData()
-        }
+        emptyStateView.isHidden = !viewModel.isEmpty
+        tableView.isHidden = viewModel.isEmpty
+        tableView.reloadData()
     }
 
     // MARK: - Actions
@@ -133,51 +123,50 @@ final class ShoppingListDetailViewController: UIViewController {
             $0.placeholder = "Miktar (örn: 1 kg)"
         }
 
-        alert.addAction(
-            UIAlertAction(title: "İptal", style: .cancel)
-        )
+        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
 
-        alert.addAction(
-            UIAlertAction(title: "Ekle", style: .default) { [weak self] _ in
-                guard
-                    let self,
-                    let name = alert.textFields?[0].text,
-                    let quantity = alert.textFields?[1].text,
-                    !name.trimmingCharacters(in: .whitespaces).isEmpty
-                else { return }
+        alert.addAction(UIAlertAction(title: "Ekle", style: .default) { [weak self] _ in
+            guard
+                let self,
+                let name = alert.textFields?[0].text,
+                let quantity = alert.textFields?[1].text,
+                !name.trimmingCharacters(in: .whitespaces).isEmpty
+            else { return }
 
-                self.manager.addItem(
-                    to: self.list,
-                    name: name,
-                    quantity: quantity
-                )
-
-                self.updateUI()
-            }
-        )
+            self.viewModel.addItem(name: name, quantity: quantity)
+            self.updateUI()
+        })
 
         present(alert, animated: true)
     }
-    
+
     private func presentEditItemAlert(item: ShoppingItem) {
-        let alert = UIAlertController(title: "Ürünü Düzenle", message: nil, preferredStyle: .alert)
-        
+        let alert = UIAlertController(
+            title: "Ürünü Düzenle",
+            message: nil,
+            preferredStyle: .alert
+        )
+
         alert.addTextField { $0.text = item.name }
         alert.addTextField { $0.text = item.quantity }
-        
+
         alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
         alert.addAction(UIAlertAction(title: "Kaydet", style: .default) { [weak self] _ in
-            guard let self,
-                  let newName = alert.textFields?[0].text,
-                  let newQuantitiy = alert.textFields?[1].text,
-                  !newName.trimmingCharacters(in: .whitespaces).isEmpty
+            guard
+                let self,
+                let newName = alert.textFields?[0].text,
+                let newQuantity = alert.textFields?[1].text,
+                !newName.trimmingCharacters(in: .whitespaces).isEmpty
             else { return }
-            
-            self.manager.updateItem(item, in: self.list, newName: newName, newQuantity: newQuantitiy)
-            
+
+            self.viewModel.updateItem(
+                item,
+                newName: newName,
+                newQuantity: newQuantity
+            )
             self.updateUI()
         })
-        
+
         present(alert, animated: true)
     }
 }
@@ -190,7 +179,7 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
         _ tableView: UITableView,
         numberOfRowsInSection section: Int
     ) -> Int {
-        items.count
+        viewModel.numberOfItems
     }
 
     func tableView(
@@ -203,56 +192,32 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
             for: indexPath
         ) as! ShoppingItemCell
 
-        let item = items[indexPath.row]
+        let item = viewModel.item(at: indexPath.row)
         cell.configure(with: item)
-        
+
         return cell
     }
-    
-//    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-//        guard editingStyle == .delete else { return }
-//        
-//        let item = items[indexPath.row]
-//        manager.removeItem(item, from: list)
-//        
-//        tableView.deleteRows(at: [indexPath], with: .automatic)
-//        updateUI()
-//    }
-//    
-//    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-//        let item = items[indexPath.row]
-//        
-//        let editAction = UIContextualAction(style: .normal, title: "Düzenle") { [weak self] _, _, completion in
-//            self?.presentEditItemAlert(item: item)
-//            completion(true)
-//            
-//        }
-//        editAction.backgroundColor = .systemBlue
-//        
-//        return UISwipeActionsConfiguration(actions: [editAction])
-//    }
-    
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
 
-        let item = items[indexPath.row]
+    func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
 
-        // Düzenle Action
+        let item = viewModel.item(at: indexPath.row)
+
         let editAction = UIContextualAction(style: .normal, title: "Düzenle") { [weak self] _, _, completion in
             self?.presentEditItemAlert(item: item)
             completion(true)
         }
         editAction.backgroundColor = .systemBlue
 
-        // Sil Action
         let deleteAction = UIContextualAction(style: .destructive, title: "Sil") { [weak self] _, _, completion in
             guard let self else { return }
-            self.manager.removeItem(item, from: self.list)
-            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+            self.viewModel.deleteItem(at: indexPath.row)
             self.updateUI()
             completion(true)
         }
 
         return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
     }
-
 }

@@ -20,10 +20,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let window = UIWindow(windowScene: windowScene)
         
-        let manager = ShoppingListManager()
+        let repository = InMemoryShoppingListRepository()
         
         // MARK - Shopping List Tab
-        let shoppingListVC = ShoppingListsViewController(manager: manager)
+        let shoppingListVC = ShoppingListsViewController(repository: repository)
         let shoppingNav = UINavigationController(
             rootViewController: shoppingListVC
         )

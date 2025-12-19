@@ -105,4 +105,41 @@ final class ShoppingListManagerTests: XCTestCase {
         XCTAssertEqual(manager.lists.count, 1)
         XCTAssertEqual(manager.lists.first, list1)
     }
+    
+    func test_updateList_updatesTitle() {
+        // Arrange
+        let list = manager.createList(title: "Market")
+        
+        // Act
+        manager.updateList(list, newTitle: "Yeni Liste")
+        
+        // Assert
+        XCTAssertEqual(manager.lists.first?.title, "Yeni Liste")
+    }
+    
+    func test_updateItem_updatesNameAndQuantity() {
+        // Arrange
+        let list = manager.createList(title: "Market")
+        let item = manager.addItem(to: list, name: "Süt", quantity: "1 Litre")
+        
+        // Act
+        manager.updateItem(item, in: list, newName: "Yoğurt", newQuantity: "2 Litre")
+        
+        // Assert
+        let updatedItem = manager.items(for: list).first
+        XCTAssertEqual(updatedItem?.name, "Yoğurt")
+        XCTAssertEqual(updatedItem?.quantity, "2 Litre")
+    }
+    
+    func test_updateItem_noneExistingItem_doesNothing() {
+        // Arrange
+        let list = manager.createList(title: "Market")
+        let fakeItem = ShoppingItem(id: UUID(), name: "Fake", quantity: "0", isCompleted: false)
+        
+        // Act
+        manager.updateItem(fakeItem, in: list, newName: "X", newQuantity: "Y")
+        
+        // Assert
+        XCTAssertTrue(manager.items(for: list).isEmpty)
+    }
 }

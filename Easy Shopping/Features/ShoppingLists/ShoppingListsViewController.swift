@@ -124,6 +124,25 @@ final class ShoppingListsViewController: UIViewController {
 
         present(alert, animated: true)
     }
+    
+    private func presentEditListAlert(list: ShoppingList) {
+        
+        let alert = UIAlertController(title: "Listeyi Düeznle", message: nil, preferredStyle: .alert)
+        
+        alert.addTextField { $0.text = list.title }
+        
+        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Düzenle", style: .default) { [weak self] _ in
+            guard let self,
+                  let newTitle = alert.textFields?[0].text,
+                  !newTitle.trimmingCharacters(in: .whitespaces).isEmpty
+            else { return }
+            
+            self.manager.updateList(list, newTitle: newTitle)
+            self.updateUI()
+        })
+        present(alert, animated: true)
+    }
 }
 
 // MARK: - TableView
@@ -171,5 +190,27 @@ extension ShoppingListsViewController: UITableViewDataSource, UITableViewDelegat
         
         tableView.deleteRows(at: [indexPath], with: .automatic)
         updateUI()
+    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        
+        let list = shoppingLists[indexPath.row]
+        
+        let editAction = UIContextualAction(style: .normal, title: "Düzenle") { [weak self] _, _, completion in
+            self?.presentEditListAlert(list: list)
+            completion(true)
+        }
+        editAction.backgroundColor = .systemBlue
+        
+        let deleteAction = UIContextualAction(style: .destructive, title: "Sil") { [weak self] _, _, completion in
+            guard let self else { return }
+            self.manager.removeList(list)
+            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+            self.updateUI()
+            completion(true)
+        }
+        
+        return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
+        
     }
 }

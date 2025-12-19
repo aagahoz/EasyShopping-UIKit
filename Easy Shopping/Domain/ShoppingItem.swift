@@ -9,9 +9,9 @@ import Foundation
 
 struct ShoppingItem: Equatable {
     let id: UUID
-    let name: String
-    let quantity: String
-    let isCompleted: Bool
+    var name: String
+    var quantity: String
+    var isCompleted: Bool
     
     init(id: UUID, name: String, quantity: String, isCompleted: Bool) {
         self.id = id

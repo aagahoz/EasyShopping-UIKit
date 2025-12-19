@@ -9,7 +9,7 @@ import Foundation
 
 struct ShoppingList: Equatable {
     let id: UUID
-    let title: String
+    var title: String
     
     init(id: UUID, title: String) {
         self.id = id

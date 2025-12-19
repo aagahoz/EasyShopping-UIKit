@@ -158,6 +158,28 @@ final class ShoppingListDetailViewController: UIViewController {
 
         present(alert, animated: true)
     }
+    
+    private func presentEditItemAlert(item: ShoppingItem) {
+        let alert = UIAlertController(title: "Ürünü Düzenle", message: nil, preferredStyle: .alert)
+        
+        alert.addTextField { $0.text = item.name }
+        alert.addTextField { $0.text = item.quantity }
+        
+        alert.addAction(UIAlertAction(title: "İptal", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Kaydet", style: .default) { [weak self] _ in
+            guard let self,
+                  let newName = alert.textFields?[0].text,
+                  let newQuantitiy = alert.textFields?[1].text,
+                  !newName.trimmingCharacters(in: .whitespaces).isEmpty
+            else { return }
+            
+            self.manager.updateItem(item, in: self.list, newName: newName, newQuantity: newQuantitiy)
+            
+            self.updateUI()
+        })
+        
+        present(alert, animated: true)
+    }
 }
 
 // MARK: - UITableViewDataSource & Delegate
@@ -187,13 +209,50 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
         return cell
     }
     
-    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-        guard editingStyle == .delete else { return }
-        
+//    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+//        guard editingStyle == .delete else { return }
+//        
+//        let item = items[indexPath.row]
+//        manager.removeItem(item, from: list)
+//        
+//        tableView.deleteRows(at: [indexPath], with: .automatic)
+//        updateUI()
+//    }
+//    
+//    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+//        let item = items[indexPath.row]
+//        
+//        let editAction = UIContextualAction(style: .normal, title: "Düzenle") { [weak self] _, _, completion in
+//            self?.presentEditItemAlert(item: item)
+//            completion(true)
+//            
+//        }
+//        editAction.backgroundColor = .systemBlue
+//        
+//        return UISwipeActionsConfiguration(actions: [editAction])
+//    }
+    
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+
         let item = items[indexPath.row]
-        manager.removeItem(item, from: list)
-        
-        tableView.deleteRows(at: [indexPath], with: .automatic)
-        updateUI()
+
+        // Düzenle Action
+        let editAction = UIContextualAction(style: .normal, title: "Düzenle") { [weak self] _, _, completion in
+            self?.presentEditItemAlert(item: item)
+            completion(true)
+        }
+        editAction.backgroundColor = .systemBlue
+
+        // Sil Action
+        let deleteAction = UIContextualAction(style: .destructive, title: "Sil") { [weak self] _, _, completion in
+            guard let self else { return }
+            self.manager.removeItem(item, from: self.list)
+            self.tableView.deleteRows(at: [indexPath], with: .automatic)
+            self.updateUI()
+            completion(true)
+        }
+
+        return UISwipeActionsConfiguration(actions: [deleteAction, editAction])
     }
+
 }

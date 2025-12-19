@@ -13,7 +13,8 @@ final class ShoppingListManager {
     private var itemsByListID: [UUID: [ShoppingItem]] = [:]
     
     // MARK: - Lists
-
+    
+    @discardableResult
     func createList(title: String) -> ShoppingList {
         
         let list = ShoppingList(
@@ -29,6 +30,11 @@ final class ShoppingListManager {
     
     func removeList(_ list: ShoppingList) {
         lists.removeAll { $0.id == list.id }
+    }
+    
+    func updateList(_ list: ShoppingList, newTitle: String) {
+        guard let index = lists.firstIndex(where: { $0.id == list.id}) else { return }
+        lists[index].title = newTitle
     }
     
     // MARK: - Items
@@ -59,5 +65,18 @@ final class ShoppingListManager {
         guard var items = itemsByListID[list.id] else { return }
         items.removeAll { $0.id == item.id }
         itemsByListID[list.id] = items
+    }
+    
+    func updateItem(_ item: ShoppingItem, in list: ShoppingList, newName: String, newQuantity: String) {
+        guard var items = itemsByListID[list.id],
+              let index = items.firstIndex(where: {$0.id == item.id}) else {
+            return
+        }
+        
+        items[index].name = newName
+        items[index].quantity = newQuantity
+        
+        itemsByListID[list.id] = items
+        
     }
 }

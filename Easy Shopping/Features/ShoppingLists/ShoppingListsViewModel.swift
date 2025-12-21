@@ -19,65 +19,79 @@ final class ShoppingListsViewModel {
 
     /// Ekranın göstereceği shopping list'ler
     /// ViewController bu veriyi SADECE okur
-    private(set) var lists: [ShoppingList] = []
-
+//    private(set) var lists: [ShoppingList] = []
+    let state: Observable<ShoppingListsState>
+    
     // MARK: - Init
 
     init(repository: ShoppingListRepository) {
         self.repository = repository
-        loadLists()
+        self.state = Observable(ShoppingListsState(lists: repository.fetchLists()))
     }
 
     // MARK: - Data Loading
-
-    /// Repository'den listeleri çeker ve ViewModel state'ini günceller
-    func loadLists() {
-        lists = repository.fetchLists()
+    
+    func reload() {
+        state.value = ShoppingListsState(lists: repository.fetchLists())
     }
+    
+    /// Repository'den listeleri çeker ve ViewModel state'ini günceller
+//    func loadLists() {
+//        lists = repository.fetchLists()
+//    }
 
     // MARK: - Computed Properties (UI Kararları)
 
-    /// Empty state gösterilecek mi?
-    var isEmpty: Bool {
-        lists.isEmpty
-    }
-
-    /// TableView için güvenli count
-    var numberOfLists: Int {
-        lists.count
-    }
+//    /// Empty state gösterilecek mi?
+//    var isEmpty: Bool {
+//        lists.isEmpty
+//    }
+//
+//    /// TableView için güvenli count
+//    var numberOfLists: Int {
+//        lists.count
+//    }
 
     // MARK: - List Actions
 
     /// Yeni liste oluşturur
     func createList(title: String) {
         repository.createList(title: title)
-        loadLists()
+        reload()
     }
 
     /// Index üzerinden liste siler (UI index ile çalışır)
     func deleteList(at index: Int) {
-        guard lists.indices.contains(index) else { return }
-        let list = lists[index]
-        repository.removeList(list)
-        loadLists()
+        guard state.value.lists.indices.contains(index) else { return }
+
+        repository.removeList(
+            listID: state.value.lists[index].id
+        )
+
+        reload()
     }
 
     /// Liste başlığını günceller
-    func updateList(_ list: ShoppingList, newTitle: String) {
-        repository.updateList(list, newTitle: newTitle)
-        loadLists()
+    func updateList(at index: Int, newTitle: String) {
+        guard state.value.lists.indices.contains(index) else { return }
+
+        repository.updateList(
+            listID: state.value.lists[index].id,
+            newTitle: newTitle
+        )
+
+        reload()
     }
 
     // MARK: - Helpers (Cell için)
 
     /// TableView cell'leri için liste döner
     func list(at index: Int) -> ShoppingList {
-        lists[index]
+        state.value.lists[index]
     }
 
     /// Bir listenin item sayısını hesaplar
     func itemCount(for list: ShoppingList) -> Int {
-        repository.items(for: list).count
+        repository.items(for: list.id).count
     }
 }

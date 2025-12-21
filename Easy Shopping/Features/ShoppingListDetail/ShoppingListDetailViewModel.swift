@@ -15,9 +15,8 @@ final class ShoppingListDetailViewModel {
     private let repository: ShoppingListRepository
 
     // MARK: - State
-
-    private(set) var items: [ShoppingItem] = []
-
+    let state: Observable<ShoppingListDetailState>
+    
     // MARK: - Init
 
     init(
@@ -26,75 +25,69 @@ final class ShoppingListDetailViewModel {
     ) {
         self.list = list
         self.repository = repository
-        loadItems()
+        
+        let items = repository.items(for: list.id)
+        self.state = Observable(ShoppingListDetailState(items: items))
     }
 
-    // MARK: - Data Loading
+    // MARK: - Private
 
-    func loadItems() {
-        items = repository.items(for: list)
-    }
-
-    // MARK: - UI Helpers
-
-    var isEmpty: Bool {
-        items.isEmpty
-    }
-
-    var numberOfItems: Int {
-        items.count
-    }
-
-    func item(at index: Int) -> ShoppingItem {
-        items[index]
+    private func reload() {
+        let items = repository.items(for: list.id)
+        state.value = ShoppingListDetailState(items: items)
     }
 
     // MARK: - Item Actions
 
     func addItem(name: String, quantity: String) {
         repository.addItem(
-            to: list,
+            to: list.id,
             name: name,
             quantity: quantity
         )
-        loadItems()
+        reload()
     }
 
     func deleteItem(at index: Int) {
-        guard items.indices.contains(index) else { return }
-        let item = items[index]
-        repository.removeItem(item, from: list)
-        loadItems()
+        guard state.value.items.indices.contains(index) else { return }
+
+        repository.removeItem(
+            itemID: state.value.items[index].id,
+            from: list.id
+        )
+
+        reload()
     }
 
     func updateItem(
-        _ item: ShoppingItem,
+        at index: Int,
         newName: String,
         newQuantity: String,
         isCompleted: Bool
-        
     ) {
+        guard state.value.items.indices.contains(index) else { return }
+
         repository.updateItem(
-            item,
-            in: list,
+            itemID: state.value.items[index].id,
+            in: list.id,
             newName: newName,
             newQuantity: newQuantity,
             isCompleted: isCompleted
-            
         )
-        loadItems()
+
+        reload()
     }
     
     func toggleItemCompletion(at index: Int) {
-        guard items.indices.contains(index) else { return }
-        
-        let item = items[index]
-        
+        guard state.value.items.indices.contains(index) else { return }
+
+        let itemID = state.value.items[index].id
+
         repository.toggleCompletion(
-            for: item,
-            in: list
+            itemID: itemID,
+            in: list.id
         )
-        
-        loadItems()
+
+        reload()
     }
 }

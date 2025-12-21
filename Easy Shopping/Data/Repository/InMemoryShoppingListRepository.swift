@@ -24,70 +24,71 @@ final class InMemoryShoppingListRepository: ShoppingListRepository {
         return list
     }
     
-    func updateList(_ list: ShoppingList, newTitle: String) {
-        guard let index = lists.firstIndex(where: { $0.id == list.id }) else { return }
+    func updateList(listID: UUID, newTitle: String) {
+        guard let index = lists.firstIndex(where: { $0.id == listID }) else { return }
         lists[index].title = newTitle
     }
-    
-    func removeList(_ list: ShoppingList) {
-        lists.removeAll { $0.id == list.id }
-        itemsByListID[list.id] = nil
+
+    func removeList(listID: UUID) {
+        lists.removeAll { $0.id == listID }
+        itemsByListID[listID] = nil
     }
     
-    func items(for list: ShoppingList) -> [ShoppingItem] {
-        itemsByListID[list.id] ?? []
+    func items(for listID: UUID) -> [ShoppingItem] {
+        itemsByListID[listID] ?? []
     }
     
     func addItem(
-        to list: ShoppingList,
+        to listID: UUID,
         name: String,
         quantity: String
-    ) -> ShoppingItem {
+    ) {
         let item = ShoppingItem(
             id: UUID(),
             name: name,
             quantity: quantity,
             isCompleted: false
         )
-        itemsByListID[list.id, default: []].append(item)
-        return item
+        itemsByListID[listID, default: []].append(item)
     }
     
     func updateItem(
-        _ item: ShoppingItem,
-        in list: ShoppingList,
+        itemID: UUID,
+        in listID: UUID,
         newName: String,
         newQuantity: String,
         isCompleted: Bool
     ) {
-        guard var items = itemsByListID[list.id],
-              let index = items.firstIndex(where: {$0.id == item.id }) else { return }
-        
+        guard var items = itemsByListID[listID],
+              let index = items.firstIndex(where: { $0.id == itemID }) else { return }
+
         items[index].name = newName
         items[index].quantity = newQuantity
         items[index].isCompleted = isCompleted
-        
-        itemsByListID[list.id] = items
+        itemsByListID[listID] = items
     }
+
     
-    func removeItem(_ item: ShoppingItem, from list: ShoppingList) {
-        guard var items = itemsByListID[list.id] else { return }
-        items.removeAll { $0.id == item.id }
-        itemsByListID[list.id] = items
+    func removeItem(
+        itemID: UUID,
+        from listID: UUID
+    ) {
+        guard var items = itemsByListID[listID] else { return }
+        items.removeAll { $0.id == itemID }
+        itemsByListID[listID] = items
     }
     
     func toggleCompletion(
-        for item: ShoppingItem,
-        in list: ShoppingList
+        itemID: UUID,
+        in listID: UUID
     ) {
-        var updatedItem = item
-        updatedItem.isCompleted.toggle()
-        updateItem(
-            item,
-            in: list,
-            newName: updatedItem.name,
-            newQuantity: updatedItem.quantity,
-            isCompleted: updatedItem.isCompleted
-        )
+        guard var items = itemsByListID[listID],
+              let index = items.firstIndex(where: { $0.id == itemID }) else {
+            return
+        }
+
+        items[index].isCompleted.toggle()
+        itemsByListID[listID] = items
     }
+
 }

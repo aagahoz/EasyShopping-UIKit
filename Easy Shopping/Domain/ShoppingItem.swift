@@ -20,3 +20,4 @@ struct ShoppingItem: Equatable {
         self.isCompleted = isCompleted
     }
 }
+

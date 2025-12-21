@@ -20,8 +20,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         let window = UIWindow(windowScene: windowScene)
         
-        let repository = InMemoryShoppingListRepository()
-        
+//        let repository = InMemoryShoppingListRepository()
+        let repository = CoreDataShoppingListRepository()
+
         // MARK - Shopping List Tab
         let shoppingListVC = ShoppingListsViewController(repository: repository)
         let shoppingNav = UINavigationController(

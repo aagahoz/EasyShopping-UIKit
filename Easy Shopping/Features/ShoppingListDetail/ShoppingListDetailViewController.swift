@@ -2,13 +2,6 @@
 //  ShoppingListDetailViewController.swift
 //  Easy Shopping
 //
-//  Created by Agah Ozdemir on 18.12.2025.
-//
-
-//
-//  ShoppingListDetailViewController.swift
-//  Easy Shopping
-//
 //  Created by Agah Ozdemir on 18.12.2025
 //
 
@@ -48,7 +41,7 @@ final class ShoppingListDetailViewController: UIViewController {
         configureNavigationBar()
         configureTableView()
         configureEmptyState()
-        updateUI()
+        bindViewModel()
     }
 
     // MARK: - Navigation Bar
@@ -99,9 +92,15 @@ final class ShoppingListDetailViewController: UIViewController {
 
     // MARK: - UI Update
 
-    private func updateUI() {
-        emptyStateView.isHidden = !viewModel.isEmpty
-        tableView.isHidden = viewModel.isEmpty
+    private func bindViewModel() {
+        viewModel.state.bind { [weak self] state in
+            self?.render(state)
+        }
+    }
+    
+    private func render(_ state: ShoppingListDetailState) {
+        emptyStateView.isHidden = !state.isEmpty
+        tableView.isHidden = state.isEmpty
         tableView.reloadData()
     }
 
@@ -134,13 +133,14 @@ final class ShoppingListDetailViewController: UIViewController {
             else { return }
 
             self.viewModel.addItem(name: name, quantity: quantity)
-            self.updateUI()
         })
 
         present(alert, animated: true)
     }
 
-    private func presentEditItemAlert(item: ShoppingItem) {
+    private func presentEditItemAlert(at index: Int) {
+        let item = viewModel.state.value.items[index]
+
         let alert = UIAlertController(
             title: "Ürünü Düzenle",
             message: nil,
@@ -160,16 +160,16 @@ final class ShoppingListDetailViewController: UIViewController {
             else { return }
 
             self.viewModel.updateItem(
-                item,
+                at: index,
                 newName: newName,
                 newQuantity: newQuantity,
                 isCompleted: item.isCompleted
             )
-            self.updateUI()
         })
 
         present(alert, animated: true)
     }
+
 }
 
 // MARK: - UITableViewDataSource & Delegate
@@ -180,7 +180,7 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
         _ tableView: UITableView,
         numberOfRowsInSection section: Int
     ) -> Int {
-        viewModel.numberOfItems
+        viewModel.state.value.numberOfItems
     }
 
     func tableView(
@@ -193,7 +193,7 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
             for: indexPath
         ) as! ShoppingItemCell
 
-        let item = viewModel.item(at: indexPath.row)
+        let item = viewModel.state.value.items[indexPath.row]
         cell.configure(with: item)
 
         return cell
@@ -204,10 +204,8 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
         trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
 
-        let item = viewModel.item(at: indexPath.row)
-
         let editAction = UIContextualAction(style: .normal, title: "Düzenle") { [weak self] _, _, completion in
-            self?.presentEditItemAlert(item: item)
+            self?.presentEditItemAlert(at: indexPath.row)
             completion(true)
         }
         editAction.backgroundColor = .systemBlue
@@ -215,7 +213,6 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
         let deleteAction = UIContextualAction(style: .destructive, title: "Sil") { [weak self] _, _, completion in
             guard let self else { return }
             self.viewModel.deleteItem(at: indexPath.row)
-            self.updateUI()
             completion(true)
         }
 
@@ -230,10 +227,11 @@ extension ShoppingListDetailViewController: UITableViewDataSource, UITableViewDe
 
         viewModel.toggleItemCompletion(at: indexPath.row)
 
-        let updatedItem = viewModel.item(at: indexPath.row)
+        let updatedItem = viewModel.state.value.items[indexPath.row]
 
         cell.configure(with: updatedItem, animated: true)
 
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }
+

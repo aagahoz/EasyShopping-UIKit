@@ -8,31 +8,37 @@
 import Foundation
 
 protocol ShoppingListRepository {
-    
+
     // LISTS
     func fetchLists() -> [ShoppingList]
     func createList(title: String) -> ShoppingList
-    func updateList(_ list: ShoppingList, newTitle: String)
-    func removeList(_ list: ShoppingList)
-    
+    func updateList(listID: UUID, newTitle: String)
+    func removeList(listID: UUID)
+
     // ITEMS
-    func items(for list: ShoppingList) -> [ShoppingItem]
+    func items(for listID: UUID) -> [ShoppingItem]
+
     func addItem(
-        to list: ShoppingList,
+        to listID: UUID,
         name: String,
         quantity: String
-    ) -> ShoppingItem
+    )
+
     func updateItem(
-        _ item: ShoppingItem,
-        in list: ShoppingList,
+        itemID: UUID,
+        in listID: UUID,
         newName: String,
         newQuantity: String,
         isCompleted: Bool
     )
-    func removeItem(_ item: ShoppingItem, from list: ShoppingList)
-    
+
+    func removeItem(
+        itemID: UUID,
+        from listID: UUID
+    )
+
     func toggleCompletion(
-        for item: ShoppingItem,
-        in list: ShoppingList
+        itemID: UUID,
+        in listID: UUID
     )
 }

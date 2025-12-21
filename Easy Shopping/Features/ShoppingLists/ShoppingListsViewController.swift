@@ -37,7 +37,7 @@ final class ShoppingListsViewController: UIViewController {
         configureNavigationBar()
         configureTableView()
         configureEmptyState()
-        updateUI()
+        bindViewModel()
     }
 
     // MARK: - UI Setup
@@ -81,10 +81,16 @@ final class ShoppingListsViewController: UIViewController {
             emptyStateView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-
-    private func updateUI() {
-        emptyStateView.isHidden = !viewModel.isEmpty
-        tableView.isHidden = viewModel.isEmpty
+    
+    private func bindViewModel() {
+        viewModel.state.bind { [weak self] state in
+            self?.render(state)
+        }
+    }
+    
+    private func render(_ state: ShoppingListsState) {
+        emptyStateView.isHidden = !state.isEmpty
+        tableView.isHidden = state.isEmpty
         tableView.reloadData()
     }
 
@@ -111,13 +117,14 @@ final class ShoppingListsViewController: UIViewController {
             else { return }
 
             self.viewModel.createList(title: text)
-            self.updateUI()
         })
 
         present(alert, animated: true)
     }
 
-    private func presentEditListAlert(list: ShoppingList) {
+    private func presentEditListAlert(at index: Int) {
+        let list = viewModel.list(at: index)
+
         let alert = UIAlertController(
             title: "Listeyi Düzenle",
             message: nil,
@@ -134,8 +141,10 @@ final class ShoppingListsViewController: UIViewController {
                 !newTitle.trimmingCharacters(in: .whitespaces).isEmpty
             else { return }
 
-            self.viewModel.updateList(list, newTitle: newTitle)
-            self.updateUI()
+            self.viewModel.updateList(
+                at: index,
+                newTitle: newTitle
+            )
         })
 
         present(alert, animated: true)
@@ -147,7 +156,7 @@ final class ShoppingListsViewController: UIViewController {
 extension ShoppingListsViewController: UITableViewDataSource, UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.numberOfLists
+        viewModel.state.value.numberOfLists
     }
 
     func tableView(
@@ -168,7 +177,7 @@ extension ShoppingListsViewController: UITableViewDataSource, UITableViewDelegat
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let selectedList = viewModel.lists[indexPath.row]
+        let selectedList = viewModel.state.value.lists[indexPath.row]
 
         let detailViewModel = ShoppingListDetailViewModel(
             list: selectedList,
@@ -187,10 +196,8 @@ extension ShoppingListsViewController: UITableViewDataSource, UITableViewDelegat
         trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
     ) -> UISwipeActionsConfiguration? {
 
-        let list = viewModel.list(at: indexPath.row)
-
         let editAction = UIContextualAction(style: .normal, title: "Düzenle") { [weak self] _, _, completion in
-            self?.presentEditListAlert(list: list)
+            self?.presentEditListAlert(at: indexPath.row)
             completion(true)
         }
         editAction.backgroundColor = .systemBlue
@@ -198,7 +205,6 @@ extension ShoppingListsViewController: UITableViewDataSource, UITableViewDelegat
         let deleteAction = UIContextualAction(style: .destructive, title: "Sil") { [weak self] _, _, completion in
             guard let self else { return }
             self.viewModel.deleteList(at: indexPath.row)
-            self.updateUI()
             completion(true)
         }
 
